@@ -1,211 +1,127 @@
-# AWS Server Monitoring and IAM Access Management
+# AWS EC2 Server Monitoring and IAM Access Management
 
 ## Project Overview
 
-This project demonstrates the implementation of a server monitoring and access management solution using **Amazon Web Services (AWS)**.
+This project demonstrates the implementation of server monitoring, automated alerting, and identity and access management (IAM) using Amazon Web Services (AWS).
 
-A client deployed a Windows Server 2012 EC2 instance to support its internal operations. Following deployment, a monitoring and alerting framework was required to maintain performance visibility, identify unusual server behaviour and support proactive issue detection.
+A client deployed a Windows Server 2012 EC2 instance to support its internal operations. To maintain server performance, reliability, and security, a monitoring and access-control framework was established using **Amazon CloudWatch, Amazon SNS, and AWS IAM**.
 
-The project focused on monitoring EC2 CPU utilisation using **Amazon CloudWatch**, configuring automated email alerts through **Amazon SNS**, and establishing administrative access controls using **AWS Identity and Access Management (IAM)**.
+The project focuses on monitoring EC2 CPU utilisation, configuring automated email alerts, and managing administrative permissions through IAM groups and users.
 
 ## Objectives
 
-The key objectives of this project were to:
-
 - Monitor and analyse CPU utilisation metrics for an EC2 instance.
-- Configure a CloudWatch alarm to detect CPU utilisation below 3%.
-- Set up email notifications through Amazon SNS for the monitoring team.
-- Create an IAM group named `Administrator Group`.
-- Attach the AWS-managed `AdministratorAccess` policy to the IAM group.
-- Create a new IAM user and assign administrative access through group membership.
-- Apply security practices such as MFA and secure password policies.
+- Configure a CloudWatch alarm to detect CPU utilisation below 3% for three consecutive five-minute evaluation periods.
+- Send automated email notifications through Amazon SNS.
+- Create an IAM group named `Administrator Group` with full administrative permissions.
+- Create an IAM user and assign administrative access through group membership.
+- Apply security best practices for administrative access.
 
 ## AWS Services Used
 
 | AWS Service | Purpose |
 |---|---|
 | Amazon EC2 | Hosts the Windows Server 2012 instance. |
-| Amazon CloudWatch | Monitors EC2 CPU utilisation metrics and generates alarms. |
-| Amazon SNS | Sends email notifications when the alarm condition is met. |
-| AWS IAM | Manages users, groups and administrative permissions. |
-| AWS Management Console | Provides the interface for configuring and managing AWS resources. |
+| Amazon CloudWatch | Monitors EC2 CPU utilisation metrics and performance. |
+| Amazon SNS | Delivers automated email notifications. |
+| AWS IAM | Manages users, groups, and permissions. |
 
-## Architecture Overview
+## Implementation
 
-The solution uses Amazon CloudWatch to monitor the EC2 instance and Amazon SNS to notify the support team when the configured CPU utilisation threshold is breached.
+### 1. EC2 Instance Monitoring Using Amazon CloudWatch
 
-IAM provides a separate access management structure for employees who require administrative permissions.
+- Accessed the AWS Management Console and navigated to the EC2 service.
+- Selected the deployed Windows Server 2012 instance.
+- Opened the **Monitoring** tab to view CPU utilisation metrics.
+- Analysed real-time and historical CPU performance graphs.
+- Used CloudWatch metrics to monitor resource utilisation and identify potential performance issues.
 
-### Monitoring and Alerting Workflow
-
-```mermaid
-flowchart TD
-    A[Windows Server 2012 EC2 Instance] --> B[Amazon CloudWatch]
-    B --> C[Monitor CPUUtilization]
-    C --> D{CPU Utilization Below 3%?}
-    D -->|Yes - Alarm condition met| E[CloudWatch Alarm]
-    D -->|No| C
-    E --> F[Amazon SNS]
-    F --> G[Email Notification]
-    G --> H[HCMonitor@HeavenClassics.com]
-```
-
-### IAM Access Management Workflow
-
-```mermaid
-flowchart TD
-    A[Create IAM User] --> B[Add User to Administrator Group]
-    B --> C[AdministratorAccess Policy]
-    C --> D[Full Administrative Permissions]
-```
-
-## Implementation Details
-
-### 1. EC2 CPU Utilisation Monitoring
-
-Amazon CloudWatch was used to monitor the performance of the Windows Server 2012 EC2 instance.
-
-**Implementation steps:**
-
-1. Accessed the AWS Management Console.
-2. Navigated to the EC2 service and selected the deployed instance.
-3. Opened the **Monitoring** tab to view CPU utilisation metrics.
-4. Reviewed the CPU utilisation graphs to analyse server performance.
-5. Used the available metrics to identify performance trends and potential bottlenecks.
-
-**Key metric monitored:**
-
-- `CPUUtilization` – Measures the percentage of allocated EC2 compute capacity currently being used.
-
-This provided visibility into the instance's CPU performance and supported ongoing monitoring and troubleshooting.
+**Outcome:** Established visibility into EC2 instance performance to support proactive monitoring and troubleshooting.
 
 ### 2. CloudWatch Alarm Configuration
 
-A CloudWatch alarm was configured to monitor CPU utilisation and trigger an email notification through Amazon SNS when the defined threshold was breached.
+Created a CloudWatch alarm to monitor CPU utilisation and notify the support team when the configured threshold was breached.
 
-**Alarm configuration:**
+**Alarm Configuration:**
 
-| Configuration | Value |
+| Parameter | Configuration |
 |---|---|
-| Alarm Name | EC2 CPU Utilisation Alarm |
 | Metric | `CPUUtilization` |
-| Threshold | Less than 3% |
-| Period Duration | 5 minutes |
+| Condition | Less than 3% |
 | Evaluation Periods | 3 |
+| Period | 5 minutes |
 | Notification Service | Amazon SNS |
-| Notification Email | `HCMonitor@HeavenClassics.com` |
+| Notification Email | `HCMonitor@client.com` |
 
-**Implementation steps:**
+**Implementation Steps:**
 
-1. Opened Amazon CloudWatch in the AWS Management Console.
-2. Navigated to **Alarms** and selected the option to create an alarm.
-3. Selected the EC2 `CPUUtilization` metric for the target instance.
-4. Configured the threshold condition to trigger when CPU utilisation fell below 3%.
-5. Set the evaluation period to three periods, each lasting five minutes.
-6. Configured an Amazon SNS notification action.
-7. Specified `HCMonitor@HeavenClassics.com` as the notification recipient.
-8. Created the alarm and configured the notification subscription.
+1. Navigated to Amazon CloudWatch.
+2. Selected **Alarms → Create Alarm**.
+3. Selected the EC2 `CPUUtilization` metric.
+4. Configured the threshold to trigger when CPU utilisation fell below 3%.
+5. Set three evaluation periods of five minutes each.
+6. Configured an Amazon SNS notification to send email alerts to `HCMonitor@client.com`.
+7. Completed the alarm configuration.
 
-**Expected result:**
-
-When the configured alarm condition is met, CloudWatch changes the alarm state and Amazon SNS sends an email notification to the designated monitoring address.
+**Outcome:** Implemented automated email alerting to notify the monitoring team of sustained low CPU utilisation, helping identify potential application or server issues.
 
 ### 3. IAM Group Creation – Administrator Group
 
-An IAM group was created to provide centralised management of administrative permissions.
+Created a centralised IAM group to manage administrative permissions.
 
-**Implementation steps:**
+**Implementation Steps:**
 
-1. Opened the AWS IAM service.
-2. Navigated to **User groups** and selected Create group.
+1. Navigated to the AWS IAM service.
+2. Selected **User Groups → Create Group**.
 3. Created a group named `Administrator Group`.
-4. Selected the AWS-managed `AdministratorAccess` policy.
-5. Attached the policy to the newly created group.
+4. Attached the AWS managed policy `AdministratorAccess`.
+5. Verified that the group had the required administrative permissions.
 
-**Permission configuration:**
+**Outcome:** Established centralised permission management for users requiring administrative access.
 
-| Setting | Configuration |
-|---|---|
-| IAM Group | `Administrator Group` |
-| Attached Policy | `AdministratorAccess` |
-| Permission Level | Full administrative access |
+### 4. IAM User Provisioning and Access Management
 
-The group provides a centralised way to manage administrative permissions for users who require elevated access.
+Created a new IAM user for an employee requiring administrative privileges.
 
-### 4. IAM User Provisioning
+**Implementation Steps:**
 
-A new IAM user was created for an employee who required administrative access to the AWS environment.
-
-**Implementation steps:**
-
-1. Navigated to the IAM Users section.
-2. Created a new employee user.
-3. Configured programmatic and AWS Management Console access.
+1. Navigated to **IAM → Users → Create User**.
+2. Created a new employee IAM user.
+3. Configured AWS Management Console access and programmatic access as required.
 4. Added the user to the `Administrator Group`.
-5. Applied the relevant account security settings.
+5. Verified that the user inherited administrative permissions through group membership.
+6. Applied security measures, including MFA and appropriate password policies.
 
-**Security considerations:**
-
-- Used the IAM group to assign permissions rather than attaching the administrator policy individually to the user.
-- Applied secure password policies.
-- Enforced or configured Multi-Factor Authentication (MFA) as part of the access security approach.
-
-By adding the user to the group, the employee inherited the permissions associated with the `AdministratorAccess` policy.
-
-## Validation and Expected Results
-
-The following checks were used to assess the configured solution:
-
-| Area | Validation |
-|---|---|
-| EC2 Monitoring | Confirmed that CPU utilisation metrics were visible in CloudWatch. |
-| CloudWatch Alarm | Checked the alarm configuration against the required metric and threshold. |
-| SNS Notifications | Verified the configured notification recipient and SNS subscription. |
-| IAM Group | Confirmed that `Administrator Group` existed and had the `AdministratorAccess` policy attached. |
-| IAM User | Confirmed that the new user was a member of the administrator group. |
-| Access Security | Reviewed the configured password and MFA security settings. |
+**Outcome:** Successfully provisioned an administrative IAM user using group-based permission management.
 
 ## Project Outcomes
 
-The project established a monitoring and access management framework for client's AWS EC2 environment.
+The project successfully established an EC2 monitoring and IAM access-management framework for the client.
 
-Key outcomes included:
+Key achievements include:
 
-- **Improved performance visibility:** CloudWatch provided access to EC2 CPU utilisation metrics.
-- **Proactive monitoring:** Automated alarms were configured to identify CPU utilisation below the defined threshold.
-- **Email-based alerting:** Amazon SNS provided a notification mechanism for the monitoring team.
-- **Centralised access management:** IAM groups simplified the assignment of administrative permissions.
-- **Improved access security:** IAM user provisioning and security controls supported structured administrative access.
+- **Server Monitoring:** Gained visibility into EC2 CPU utilisation through Amazon CloudWatch.
+- **Automated Alerting:** Configured threshold-based email notifications using CloudWatch and Amazon SNS.
+- **Centralised Access Management:** Created an IAM group with administrative permissions.
+- **User Provisioning:** Created and assigned an IAM user to the appropriate administrative group.
+- **Security:** Incorporated MFA and password security practices into the access-management approach.
+- **Operational Reliability:** Improved infrastructure monitoring and supported proactive issue detection.
 
-## Technical Skills Demonstrated
+## Key Skills Demonstrated
 
-- AWS Management Console
-- Amazon EC2
-- Amazon CloudWatch
-- CloudWatch Metrics and Alarms
-- Amazon SNS
-- AWS IAM Users and Groups
+- Amazon EC2 Instance Monitoring
+- Amazon CloudWatch Metrics and Alarms
+- Amazon SNS Notifications
+- AWS Identity and Access Management (IAM)
+- IAM Users, Groups and Policies
 - AWS Managed Policies
-- AdministratorAccess Policy
-- Monitoring and Alerting
-- Cloud Infrastructure Support
-- Identity and Access Management
-- Troubleshooting and Operational Monitoring
-
-## Key Learnings
-
-Through this project, I gained practical experience in:
-
-1. Monitoring EC2 instance performance using Amazon CloudWatch.
-2. Configuring metric-based alarms for proactive issue detection.
-3. Integrating CloudWatch alarms with Amazon SNS for email notifications.
-4. Managing IAM users, groups and AWS-managed policies.
-5. Applying centralised permission management and security best practices.
+- Cloud Infrastructure Monitoring
+- Access Control and Security Management
+- Troubleshooting and Operational Support
 
 ## Conclusion
 
-This project demonstrated how AWS monitoring and identity management services can be used together to support reliable cloud operations.
+This project provided practical experience in AWS infrastructure monitoring, automated alert configuration, and identity and access management. It demonstrates how AWS CloudWatch, SNS, and IAM can be used together to improve infrastructure visibility, support operational reliability, and manage administrative access within a cloud environment.
 
-By implementing CloudWatch monitoring, SNS notifications and IAM-based administrative access, the solution provided to the client with improved performance visibility, automated alerting and structured access management.
-
-These skills form an important foundation for cloud infrastructure monitoring, operational support and AWS administration.
+---
+**Technology Stack:** AWS | Amazon EC2 | Amazon CloudWatch | Amazon SNS | AWS IAM
